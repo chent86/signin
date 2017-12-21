@@ -4,12 +4,13 @@ var multer = require('multer');
 var app = express();
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 var array = new Array();
-app.get('/', function (req, res) {
-  if(req.query.username === undefined) {
-    res.sendFile( __dirname + "/" + "index/1.html" );
-  }
-  else {
-    if(req.path == "/") {
+
+app.get(/\//, function (req, res) {
+  if(req.path == "/") {
+    if(req.query.username === undefined) {
+      res.sendFile( __dirname + "/" + "index/1.html" );
+    }
+    else {
       var num = 0;
       for(var i = 0; i < array.length; i++)
         if(array[i].username == req.query.username)
@@ -21,34 +22,17 @@ app.get('/', function (req, res) {
       res.sendFile( __dirname + "/" + pathname );     
     }
   }
-})
-
-app.get('/index/1.css', function (req, res) {
-  res.sendFile( __dirname + '/' + '/index/1.css' );
-})
-
-app.get('/index/1.js', function (req, res) {
-  res.sendFile( __dirname + '/' + '/index/1.js' );
-})
-
-app.get('/info/2.css', function (req, res) {
-  res.sendFile( __dirname + '/' + '/info/2.css' );
-})
-
-app.get('/info/2.js', function (req, res) {
-  res.sendFile( __dirname + '/' + '/info/2.js' );
-})
-
-app.get('/picture/simple-codelines.svg', function (req, res) {
- res.sendFile( __dirname + "/" + "picture/simple-codelines.svg" );
-})
-
-app.get('/data', function (req, res) {
-  for (var i = 0; i < array.length; i++)
-    if (array[i].username == req.query.username) {
-      res.send(array[i].username + " " + array[i].number + " " +
-                   array[i].tel + " " + array[i].mail + " ");
-    }
+  else if(req.path == '/index/1.css' || req.path == '/index/1.js' ||
+    req.path == '/info/2.css' || req.path == '/info/2.js' ||
+    req.path == '/picture/simple-codelines.svg')
+    res.sendFile( __dirname + req.path);
+  else if(req.path == '/data') {
+    for (var i = 0; i < array.length; i++)
+      if (array[i].username == req.query.username) {
+        res.send(array[i].username + " " + array[i].number + " " +
+                     array[i].tel + " " + array[i].mail + " ");
+      }    
+  }
 })
 
 app.post('/', urlencodedParser, function (req, res) {

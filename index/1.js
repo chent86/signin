@@ -91,7 +91,7 @@ function check() {
   var tel = /^[1-9]\d{10,}$/;
   var mail = /^[0-9a-zA-Z_\-]+@(([0-9a-zA-Z_\-])+\.)+[a-zA-Z]{2,4}$/;
   if(!$("input:eq(0)").val()) {
-    warn("0","Username can't be blank");
+    warn("0","Username shouldn't be blank");
     check = false;
   }
   else if(!name.test($("input:eq(0)").val())) {
@@ -100,7 +100,7 @@ function check() {
     check = false;
   }
   if(!$("input:eq(1)").val()) {
-    warn("1","Id can't be blank");
+    warn("1","Id shouldn't be blank");
     check = false;
   }
   else if(!number.test($("input:eq(1)").val())) {
@@ -108,7 +108,7 @@ function check() {
     check = false;
   }
   if(!$("input:eq(2)").val()) {
-    warn("2","Telephone can't be blank");
+    warn("2","Telephone shouldn't be blank");
     check = false;
   }
   else if(!tel.test($("input:eq(2)").val())) {
@@ -116,7 +116,7 @@ function check() {
     check = false;
   }
   if(!$("input:eq(3)").val()) {
-    warn("3","Email can't be blank");
+    warn("3","Email shouldn't be blank");
     check = false;
   }
   else if(!mail.test($("input:eq(3)").val())) {
