@@ -1,102 +1,119 @@
-var http = require('http');
-var fs = require('fs');
-var url = require('url');
-var querystring = require('querystring');
+var express = require('express');
+var bodyParser = require('body-parser');
+var multer = require('multer'); 
+var app = express();
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
 var array = new Array();
 
-http.createServer(function(request, response) {
-  console.log(request.method + ': ' + request.url);
-  var params = url.parse(request.url, true).query;
-  if (request.method == "GET") {
-    if (params.username) {
-      var pathname = url.parse(request.url).pathname;                //deal with GET request
-      console.log("Request for " + pathname + " received.");
-      if (pathname == "/") {
-        var num = 0;
-        for(var i = 0; i < array.length; i++)
-          if(array[i].username == params.username)
-            num++;
-        console.log(num);
-        if(num == 1) 
-          pathname = "/info/2.html";
-        else
-          pathname = "/index/1.html";
-          fs.readFile(pathname.substr(1), function(err, data) {        //three kinds of problems
-            if (err) {                                                 //1. GET without username:
-              console.log(err);                                        //   offer register UI
-              response.writeHead(404, {'Content-Type' : 'text/html'}); //2. GET with username
-            } else {                                                   //   give infomation UI and change url in the meanwhile
-              response.writeHead(200, {'Content-Type' : 'text/html'}); //3. GET with username(2)
-              response.write(data.toString());                         //   give infomation from server to UI
-            }
-            response.end();
-          });
-      } else {
-      var pathname = url.parse(request.url).pathname;                //deal with GET request
-      console.log("hello Request for " + pathname + " received.");
-        for (var i = 0; i < array.length; i++)
-          if (array[i].username == params.username) {
-            response.end(array[i].username + " " + array[i].number + " " +
-                         array[i].tel + " " + array[i].mail + " ");
-          }
-      }
-    } else {
-      var pathname = url.parse(request.url).pathname;
-      console.log("Request for " + pathname + " received.");
-      if (pathname == "/")
-        pathname = "/index/1.html";
-      fs.readFile(pathname.substr(1), function(err, data) {
-        if (err) {
-          console.log(err);
-          response.writeHead(404, {'Content-Type' : 'text/html'});
-        } else {
-          if(pathname == "/picture/simple-codelines.svg") {
-            response.writeHead(200, {'Content-Type' : 'image/svg+xml'});
-          }
-          else
-          response.writeHead(200);
-          response.write(data.toString());
-        }
-        response.end();
-      });
+app.get(/\//, function (req, res) {
+  console.log(req.path);
+  if(req.path == "/") {
+    if(req.query.username === undefined) {
+        res.sendFile( __dirname + "/" + "login/login.html" );
     }
-  } else if (request.method == "POST") {
-    var body = "";
-    request.on('data', function(chunk) { body += chunk; });
-    request.on('end', function() {
-      body = querystring.parse(body);
-      response.writeHead(200, {'Content-Type' : 'text/html; charset=utf8'}); 
-      if (body.username) {                   //POST                                 
-        tmp = {};                            //just post infomation from UI to server 
-        tmp.username = body.username;        // and save it in an Array temporarily
-        tmp.number = body.number;
-        tmp.tel = body.tel;
-        tmp.mail = body.mail;
-        var result = new Array("0","0","0","0");
-        for(var i = 0; i < array.length; i++) {
-          if(array[i].username == tmp.username)
-            result[0] = '1';
-          if(array[i].number == tmp.number)
-            result[1] = '1';
-          if(array[i].tel == tmp.tel)
-            result[2] = '1';
-          if(array[i].mail == tmp.mail)
-            result[3] = '1';
-        }
-        if(parseInt(result[0]+result[1]+result[2]+result[3]) == 0)
-          array.push(tmp);
-        response.end(result[0]+result[1]+result[2]+result[3]);
-        //  var fs = require("fs");
-        //  console.log("准备写入文件");
-        //  fs.writeFile('output', body.username,  function(err) {
-        //   if (err) {
-        //       return console.error(err);    if we need to save information, we can write to file.
-        //   }
-        // });
-      }
-    });
+    else {
+      var num = 0;
+      for(var i = 0; i < array.length; i++)
+        if(array[i].username == req.query.username)
+          num++;
+      if(num == 1) 
+        var pathname = "/info/info.html";
+      else 
+        var pathname = "/login/login.html";
+      res.sendFile( __dirname + pathname );     
+    }
+  }
+  else if(req.path == "/regist") {
+    res.sendFile( __dirname + "/" + "register/register.html" );
+  }
+  else if(req.path == '/login/login.css' || req.path == '/login/login.js' ||
+    req.path == '/register/register.css' || req.path == '/register/register.js' ||
+    req.path == '/picture/simple-codelines.svg' || req.path == '/picture/flag.png'||
+    req.path == '/info/info.css' || req.path == '/info/info.js')
+      res.sendFile( __dirname + req.path);
+  else if(req.path == '/data') {
+    for (var i = 0; i < array.length; i++)
+      if (array[i].username == req.query.username) {
+        res.send(array[i].username +  " " + array[i].number + " " 
+          + array[i].tel + " " + array[i].mail + " ");
+      }    
   }
 })
-.listen(8000);
 
-console.log('Server running at http://127.0.0.1:8000/');
+app.post(/\//, urlencodedParser, function (req, res) {
+  if(req.path == "/register") {
+    if (check(req.body.username, req.body.password, req.body.number,
+    req.body.tel, req.body.mail)) {                   //POST                                 
+      tmp = {};                            //just post infomation from UI to server 
+      tmp.username = req.body.username;        // and save it in an Array temporarily
+      tmp.password = req.body.password;
+      tmp.number = req.body.number;
+      tmp.tel = req.body.tel;
+      tmp.mail = req.body.mail;
+      var result = new Array("0","0","0","0","0");
+      for(var i = 0; i < array.length; i++) {
+        if(array[i].username == tmp.username)
+          result[0] = '1';
+        // if(array[i].password == tmp.password)
+        //   result[1] = '1';        
+        if(array[i].number == tmp.number)
+          result[2] = '1';
+        if(array[i].tel == tmp.tel)
+          result[3] = '1';
+        if(array[i].mail == tmp.mail)
+          result[4] = '1';
+      }
+      if(parseInt(result[0]+result[1]+result[2]+result[3]+result[4]) == 0)
+        array.push(tmp);
+      res.send(result[0]+result[1]+result[2]+result[3]+result[4]);
+    }
+    else {
+      res.send("error");
+    }
+  }
+  else if(req.path == "/login") {
+    console.log(req.body.type);
+    if(req.body.type == "username") {
+      var result = "0";
+      for(var i = 0; i < array.length; i++)
+        if(array[i].username == req.body.username) {
+          result = "1";
+          break;
+        }
+      res.send(result);
+    }
+    else if(req.body.type == "password") {
+      var result = "00";
+      for(var i = 0; i < array.length; i++)
+        if(array[i].username == req.body.username) {
+          result = "10";
+          if(array[i].password == req.body.password)
+            result = "11";
+          break;
+        }
+        console.log(result);
+      res.send(result);
+    }
+  }
+})
+
+var server = app.listen(8000, function () {
+  var host = server.address().address
+  var port = server.address().port
+  console.log("应用实例，访问地址为 http://%s:%s", host, port)
+})
+
+function check(username, password, number, tel, mail) {
+  var result = true;
+  var name_check = /^[a-zA-Z][_0-9a-zA-Z]{5,17}$/;
+  var password_check = /^[_\-0-9a-zA-Z]{6,12}$/;
+  var number_check = /^[1-9]\d{7,7}$/;
+  var tel_check = /^[1-9]\d{10,}$/;
+  var mail_check = /^[0-9a-zA-Z_\-]+@(([0-9a-zA-Z_\-])+\.)+[a-zA-Z]{2,4}$/;
+  if(username == "" || password == "" || number == "" || tel == "" || mail == "")
+    result = false;
+  else if(!name_check.test(username) || !password_check.test(password) || !number_check.test(number)
+    || !tel_check.test(tel) || !mail_check.test(mail))
+    result = false;
+  return result;
+}
