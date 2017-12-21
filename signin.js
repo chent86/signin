@@ -1,15 +1,29 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var multer = require('multer'); 
+var multer = require('multer');
+var cookieParser = require('cookie-parser')
 var app = express();
+app.use(cookieParser());
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 var array = new Array();
 
 app.get(/\//, function (req, res) {
   console.log(req.path);
+  console.log(req.cookies);
   if(req.path == "/") {
-    if(req.query.username === undefined) {
-        res.sendFile( __dirname + "/" + "login/login.html" );
+    if(JSON.stringify(req.cookies) != "{}") {
+      var num = 0;
+      for(var i = 0; i < array.length; i++)
+        if(array[i].username == req.cookies.remember.username)
+          num++;
+      if(num == 1) 
+        var pathname = "/info/info.html";
+      else 
+        var pathname = "/login/login.html";
+      res.sendFile( __dirname + pathname );        
+    }
+    else if(req.query.username === undefined) {
+        res.sendFile( __dirname + "/login/login.html" );
     }
     else {
       var num = 0;
@@ -24,7 +38,7 @@ app.get(/\//, function (req, res) {
     }
   }
   else if(req.path == "/regist") {
-    res.sendFile( __dirname + "/" + "register/register.html" );
+    res.sendFile( __dirname + "/register/register.html" );
   }
   else if(req.path == '/login/login.css' || req.path == '/login/login.js' ||
     req.path == '/register/register.css' || req.path == '/register/register.js' ||
@@ -65,6 +79,7 @@ app.post(/\//, urlencodedParser, function (req, res) {
       }
       if(parseInt(result[0]+result[1]+result[2]+result[3]+result[4]) == 0)
         array.push(tmp);
+      res.cookie('remember', {username: req.body.username, password: req.body.password});
       res.send(result[0]+result[1]+result[2]+result[3]+result[4]);
     }
     else {
@@ -100,7 +115,7 @@ app.post(/\//, urlencodedParser, function (req, res) {
 var server = app.listen(8000, function () {
   var host = server.address().address
   var port = server.address().port
-  console.log("应用实例，访问地址为 http://%s:%s", host, port)
+  console.log("Signin is runing in http://localhost:8000");
 })
 
 function check(username, password, number, tel, mail) {

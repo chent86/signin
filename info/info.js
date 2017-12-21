@@ -1,6 +1,14 @@
 var array = new Array();
-window.onload = function() {
+
+$(function() {
   var tmp = window.location.href;
+  $("#submit").bind("click",signout);
+  var raw = Cookies.get('remember');
+  var ripe = "";
+  for(var i = 2; i < raw.length; i++)
+    ripe += raw[i];
+  m_cookie = JSON.parse(ripe);
+  console.log(m_cookie.username + "hhh" + m_cookie.password);
   var p = tmp.indexOf("=");
   var username = "";
   for(var i = p+1; i < tmp.length; i++)
@@ -23,4 +31,8 @@ window.onload = function() {
       $(".info:eq(3)").val(array[3]);
     })(info);
   });
+});
+
+function signout() {
+  window.location.href="http://localhost:8000";
 }
