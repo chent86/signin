@@ -131,12 +131,13 @@ input {
 }
 
 #a {
-    left: 110%;
+  left: 110%;
+  top: 98px;
 }
 
 #b {
   left: 110%;
-  top: 171px;
+  top: 194px;
 }
 
 #c {

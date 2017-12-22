@@ -45,7 +45,33 @@ app.get(/\//, function (req, res) {
 
 app.post(/\//, urlencodedParser, function (req, res) {
   var db = mongojs('signin', ['important']);
-  if(req.path == "/register") {
+  if(req.path == "/register/one") {
+    if(req.body.username != undefined) {
+      db.important.findOne({"username": req.body.username}, function(err, doc) {
+        if(doc != null)
+          res.send("error")
+      });
+    }
+    else if(req.body.number != undefined) {
+      db.important.findOne({"number": req.body.number}, function(err, doc) {
+        if(doc != null)
+          res.send("error")
+      });
+    }
+    else if(req.body.tel != undefined) {
+      db.important.findOne({"tel": req.body.tel}, function(err, doc) {
+        if(doc != null)
+          res.send("error")
+      });
+    }
+    else if(req.body.mail != undefined) {
+      db.important.findOne({"mail": req.body.mail}, function(err, doc) {
+        if(doc != null)
+          res.send("error")
+      });
+    }
+  }
+  else if(req.path == "/register") {
     if (check(req.body.username, req.body.password, req.body.number,
     req.body.tel, req.body.mail)) {                   //POST                                 
       tmp = {};                            //just post infomation from UI to server 
