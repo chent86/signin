@@ -102,7 +102,7 @@ function change() {
     url: "/register",
     data: {
       username: $("input:eq(0)").val(),
-      password: $("input:eq(1)").val(),
+      password: $.md5($("input:eq(1)").val()),
       number: $("input:eq(3)").val(),
       tel: $("input:eq(4)").val(),
       mail: $("input:eq(5)").val()

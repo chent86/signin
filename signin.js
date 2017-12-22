@@ -1,11 +1,10 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var multer = require('multer');
 var cookieParser = require('cookie-parser')
+var mongojs = require('mongojs');
 var app = express();
 app.use(cookieParser());
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
-var mongojs = require('mongojs');
 
 app.get(/\//, function (req, res) {
   console.log(req.path);
@@ -31,7 +30,7 @@ app.get(/\//, function (req, res) {
   else if(req.path == '/login/login.css' || req.path == '/login/login.js' ||
     req.path == '/register/register.css' || req.path == '/register/register.js' ||
     req.path == '/picture/simple-codelines.svg' || req.path == '/picture/flag.png'||
-    req.path == '/info/info.css' || req.path == '/info/info.js')
+    req.path == '/info/info.css' || req.path == '/info/info.js' || req.path == '/encrypt/jquery.md5.js')
       res.sendFile( __dirname + req.path);
   else if(req.path == '/data') {
     db.important.findOne({"username": req.cookies.remember.username, "password":req.cookies.remember.password},
@@ -147,13 +146,13 @@ var server = app.listen(8000, function () {
 function check(username, password, number, tel, mail) {
   var result = true;
   var name_check = /^[a-zA-Z][_0-9a-zA-Z]{5,17}$/;
-  var password_check = /^[_\-0-9a-zA-Z]{6,12}$/;
+  // var password_check = /^[_\-0-9a-zA-Z]{6,12}$/;
   var number_check = /^[1-9]\d{7,7}$/;
   var tel_check = /^[1-9]\d{10,}$/;
   var mail_check = /^[0-9a-zA-Z_\-]+@(([0-9a-zA-Z_\-])+\.)+[a-zA-Z]{2,4}$/;
   if(username == "" || password == "" || number == "" || tel == "" || mail == "")
     result = false;
-  else if(!name_check.test(username) || !password_check.test(password) || !number_check.test(number)
+  else if(!name_check.test(username) || !number_check.test(number)
     || !tel_check.test(tel) || !mail_check.test(mail))
     result = false;
   return result;

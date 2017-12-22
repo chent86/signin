@@ -40,7 +40,7 @@ function ready_for_check() {
       data: {
         type: "password",
         username: $("input:eq(0)").val(),
-        password: $("input:eq(1)").val()
+        password: $.md5($("input:eq(1)").val())
       },
       success: function(data) {
         if(data[0] == '0')
@@ -75,7 +75,7 @@ function change() {
       data: {
         type: "password",
         username: $("input:eq(0)").val(),
-        password: $("input:eq(1)").val()
+        password: $.md5($("input:eq(1)").val())
       },
       success: function(data) {
         if(data[0] == '0')
