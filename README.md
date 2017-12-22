@@ -9,3 +9,4 @@
 3. 数据库名称为signin, collection名称为important
 4. cookie名称为remember
 5. 加密方式:MD5
+6. 运行方式: node signin.js
