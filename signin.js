@@ -7,8 +7,8 @@ app.use(cookieParser());
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 app.get(/\//, function (req, res) {
-  console.log(req.path);
-  console.log(req.cookies);
+  console.log("GET "+req.path);
+  // console.log(req.cookies);
   var db = mongojs('signin', ['important']);
   if(req.path == "/") {
     if(JSON.stringify(req.cookies) != "{}" && req.cookies.remember != undefined) {
@@ -44,6 +44,7 @@ app.get(/\//, function (req, res) {
 
 app.post(/\//, urlencodedParser, function (req, res) {
   var db = mongojs('signin', ['important']);
+  console.log("POST "+req.path);
   if(req.path == "/register/one") {
     if(req.body.username != undefined) {
       db.important.findOne({"username": req.body.username}, function(err, doc) {
@@ -107,7 +108,7 @@ app.post(/\//, urlencodedParser, function (req, res) {
     }
   }
   else if(req.path == "/login") {
-    console.log(req.body.type);
+    // console.log(req.body.type);
     if(req.body.type == "username") {
       var result = "0";
       db.important.findOne({"username": req.body.username}, function(err, doc) {
