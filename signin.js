@@ -12,7 +12,7 @@ app.get(/\//, function (req, res) {
   console.log(req.cookies);
   var db = mongojs('signin', ['important']);
   if(req.path == "/") {
-    if(JSON.stringify(req.cookies) != "{}") {
+    if(JSON.stringify(req.cookies) != "{}" && req.cookies.remember != undefined) {
       db.important.findOne({"username": req.cookies.remember.username}, function(err, doc) {
           if(doc != null)
             var pathname = "/info/info.html";
