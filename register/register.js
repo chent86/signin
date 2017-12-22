@@ -88,14 +88,12 @@ function change() {
         if(data[0] == "1")
           warn("0","Username is already taken");
         if(data[1] == "1")
-          warn("1","Password is already taken");
-        if(data[2] == "1")
           warn("3","Id is already taken");
-        if(data[3] == "1")
+        if(data[2] == "1")
           warn("4","Telephone is already taken");
-        if(data[4] == "1")
+        if(data[3] == "1")
           warn("5","Email is already taken");
-        if(data[0] == "0" && data[1] == "0" && data[2] == "0" && data[3] == "0" && data[4] == "0")
+        if(data[0] == "0" && data[1] == "0" && data[2] == "0" && data[3] == "0")
           window.location.href="http://localhost:8000?username="+$("input:eq(0)").val();    //GET second time
       }
     }

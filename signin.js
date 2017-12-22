@@ -5,36 +5,24 @@ var cookieParser = require('cookie-parser')
 var app = express();
 app.use(cookieParser());
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
-var array = new Array();
+var mongojs = require('mongojs');
 
 app.get(/\//, function (req, res) {
   console.log(req.path);
   console.log(req.cookies);
+  var db = mongojs('signin', ['important']);
   if(req.path == "/") {
     if(JSON.stringify(req.cookies) != "{}") {
-      var num = 0;
-      for(var i = 0; i < array.length; i++)
-        if(array[i].username == req.cookies.remember.username)
-          num++;
-      if(num == 1) 
-        var pathname = "/info/info.html";
-      else 
-        var pathname = "/login/login.html";
-      res.sendFile( __dirname + pathname );        
+      db.important.findOne({"username": req.cookies.remember.username}, function(err, doc) {
+          if(doc != null)
+            var pathname = "/info/info.html";
+          else
+            var pathname = "/login/login.html";
+          res.sendFile( __dirname + pathname ); 
+      });       
     }
     else if(req.query.username === undefined) {
         res.sendFile( __dirname + "/login/login.html" );
-    }
-    else {
-      var num = 0;
-      for(var i = 0; i < array.length; i++)
-        if(array[i].username == req.query.username)
-          num++;
-      if(num == 1) 
-        var pathname = "/info/info.html";
-      else 
-        var pathname = "/login/login.html";
-      res.sendFile( __dirname + pathname );     
     }
   }
   else if(req.path == "/regist") {
@@ -46,15 +34,17 @@ app.get(/\//, function (req, res) {
     req.path == '/info/info.css' || req.path == '/info/info.js')
       res.sendFile( __dirname + req.path);
   else if(req.path == '/data') {
-    for (var i = 0; i < array.length; i++)
-      if (array[i].username == req.cookies.remember.username && array[i].password == req.cookies.remember.password) {
-        res.send(array[i].username +  " " + array[i].number + " " 
-          + array[i].tel + " " + array[i].mail + " ");
-      }    
+    db.important.findOne({"username": req.cookies.remember.username, "password":req.cookies.remember.password},
+    function(err, doc) {
+      if(doc != null)
+        res.send(doc["username"] +  " " + doc["number"] + " " 
+          + doc["tel"] + " " + doc["mail"] + " ")
+    })       
   }
 })
 
 app.post(/\//, urlencodedParser, function (req, res) {
+  var db = mongojs('signin', ['important']);
   if(req.path == "/register") {
     if (check(req.body.username, req.body.password, req.body.number,
     req.body.tel, req.body.mail)) {                   //POST                                 
@@ -65,23 +55,27 @@ app.post(/\//, urlencodedParser, function (req, res) {
       tmp.tel = req.body.tel;
       tmp.mail = req.body.mail;
       var result = new Array("0","0","0","0","0");
-      for(var i = 0; i < array.length; i++) {
-        if(array[i].username == tmp.username)
-          result[0] = '1';
-        // if(array[i].password == tmp.password)
-        //   result[1] = '1';        
-        if(array[i].number == tmp.number)
-          result[2] = '1';
-        if(array[i].tel == tmp.tel)
-          result[3] = '1';
-        if(array[i].mail == tmp.mail)
-          result[4] = '1';
-      }
-      if(parseInt(result[0]+result[1]+result[2]+result[3]+result[4]) == 0)
-        array.push(tmp);
-      res.cookie('remember', {username: req.body.username, password: req.body.password},
-              {'expires':new Date(Date.now() + 900000)});
-      res.send(result[0]+result[1]+result[2]+result[3]+result[4]);
+      db.important.findOne({"username": tmp.username}, function(err, doc) {
+          if(doc != null)
+            result[0] = '1';
+          db.important.findOne({"number": tmp.number}, function(err, doc) {
+              if(doc != null)
+                result[1] = '1';
+              db.important.findOne({"tel": tmp.tel}, function(err, doc) {
+                  if(doc != null)
+                    result[2] = '1';
+                  db.important.findOne({"mail": tmp.mail}, function(err, doc) {
+                      if(doc != null)
+                        result[3] = '1';
+                      if(parseInt(result[0]+result[1]+result[2]+result[3]) == 0)
+                        db.important.insert(tmp);
+                      res.cookie('remember', {username: req.body.username, password: req.body.password},
+                              {'expires':new Date(Date.now() + 900000)});
+                      res.send(result[0]+result[1]+result[2]+result[3]);
+                  });
+              });
+          });
+      });
     }
     else {
       res.send("error");
@@ -91,27 +85,29 @@ app.post(/\//, urlencodedParser, function (req, res) {
     console.log(req.body.type);
     if(req.body.type == "username") {
       var result = "0";
-      for(var i = 0; i < array.length; i++)
-        if(array[i].username == req.body.username) {
-          result = "1";
-          break;
-        }
-      res.send(result);
+      db.important.findOne({"username": req.body.username}, function(err, doc) {
+          if(doc != null)
+            result = "1";
+          res.send(result);
+      });
     }
     else if(req.body.type == "password") {
       var result = "00";
-      for(var i = 0; i < array.length; i++)
-        if(array[i].username == req.body.username) {
-          result = "10";
-          if(array[i].password == req.body.password) {
-            result = "11";
-            res.cookie('remember', {username: req.body.username, password: req.body.password},
-              {'expires':new Date(Date.now() + 900000)});
-          }
-          break;
-        }
-        console.log(result);
-      res.send(result);
+      db.important.findOne({"username": req.body.username}, function(err, doc) {
+          if(doc != null) {
+            result = "10";
+            db.important.findOne({"username": req.body.username, "password": req.body.password}, function(err, doc) {
+                if(doc != null) {
+                  result = "11";
+                  res.cookie('remember', {username: req.body.username, password: req.body.password},
+                    {'expires':new Date(Date.now() + 900000)});
+                  res.send(result);                  
+                } else 
+                  res.send(result);
+            });            
+          } else
+            res.send(result);
+      });
     }
   }
 })
