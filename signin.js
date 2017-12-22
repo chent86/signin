@@ -47,7 +47,7 @@ app.get(/\//, function (req, res) {
       res.sendFile( __dirname + req.path);
   else if(req.path == '/data') {
     for (var i = 0; i < array.length; i++)
-      if (array[i].username == req.query.username) {
+      if (array[i].username == req.cookies.remember.username && array[i].password == req.cookies.remember.password) {
         res.send(array[i].username +  " " + array[i].number + " " 
           + array[i].tel + " " + array[i].mail + " ");
       }    
@@ -79,7 +79,8 @@ app.post(/\//, urlencodedParser, function (req, res) {
       }
       if(parseInt(result[0]+result[1]+result[2]+result[3]+result[4]) == 0)
         array.push(tmp);
-      res.cookie('remember', {username: req.body.username, password: req.body.password});
+      res.cookie('remember', {username: req.body.username, password: req.body.password},
+              {'expires':new Date(Date.now() + 900000)});
       res.send(result[0]+result[1]+result[2]+result[3]+result[4]);
     }
     else {
@@ -102,8 +103,11 @@ app.post(/\//, urlencodedParser, function (req, res) {
       for(var i = 0; i < array.length; i++)
         if(array[i].username == req.body.username) {
           result = "10";
-          if(array[i].password == req.body.password)
+          if(array[i].password == req.body.password) {
             result = "11";
+            res.cookie('remember', {username: req.body.username, password: req.body.password},
+              {'expires':new Date(Date.now() + 900000)});
+          }
           break;
         }
         console.log(result);

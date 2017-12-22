@@ -12,7 +12,6 @@ window.onload = function() {
 }
 
 function writing() {
-  $("#g").removeClass("show").addClass("hide");
   if(this.name == "username")
     $(".warning:eq(0)").removeClass("show").addClass("hide");
   if(this.name == "password")
